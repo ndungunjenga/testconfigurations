@@ -1,5 +1,5 @@
 ## In etcd node 0(etc0) do the following.
-## Update HOST0, HOST1, and HOST2 with the IPs or resolvable names of your hosts
+# Update HOST0, HOST1, and HOST2 with the IPs or resolvable names of your hosts
 export HOST0=192.168.0.7
 export HOST1=192.168.0.8
 export HOST2=192.168.0.9
@@ -33,7 +33,7 @@ etcd:
 EOF
 done
 
-## Get the Certificate Authority
+# Get the Certificate Authority
 sudo kubeadm init phase certs etcd-ca
 
 sudo kubeadm init phase certs etcd-server --config=/tmp/${HOST2}/kubeadmcfg.yaml
@@ -41,6 +41,7 @@ sudo kubeadm init phase certs etcd-peer --config=/tmp/${HOST2}/kubeadmcfg.yaml
 sudo kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST2}/kubeadmcfg.yaml
 sudo kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST2}/kubeadmcfg.yaml
 sudo cp -R /etc/kubernetes/pki /tmp/${HOST2}/
+
 # cleanup non-reusable certificates
 sudo find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete
 
@@ -55,13 +56,14 @@ sudo kubeadm init phase certs etcd-server --config=/tmp/${HOST0}/kubeadmcfg.yaml
 sudo kubeadm init phase certs etcd-peer --config=/tmp/${HOST0}/kubeadmcfg.yaml
 sudo kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST0}/kubeadmcfg.yaml
 sudo kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST0}/kubeadmcfg.yaml
+
 # No need to move the certs because they are for HOST0
 
 # clean up certs that should not be copied off this host
 sudo find /tmp/${HOST2} -name ca.key -type f -delete
 sudo find /tmp/${HOST1} -name ca.key -type f -delete
 
-## Copy the Generated certificates and keys to the other etcd nodes
+# Copy the Generated certificates and keys to the other etcd nodes
 
 USER=ubuntu
 HOST=${HOST1}
@@ -71,7 +73,7 @@ USER@HOST $ sudo -Es
 root@HOST $ chown -R root:root pki
 root@HOST $ mv pki /etc/kubernetes/
 
-## Prepare etcd pod manifest in each etcd node:
+# Prepare etcd pod manifest in each etcd node:
 root@HOST0 $ kubeadm init phase etcd local --config=/tmp/${HOST0}/kubeadmcfg.yaml
 root@HOST1 $ kubeadm init phase etcd local --config=/home/ubuntu/kubeadmcfg.yaml
 root@HOST2 $ kubeadm init phase etcd local --config=/home/ubuntu/kubeadmcfg.yaml
