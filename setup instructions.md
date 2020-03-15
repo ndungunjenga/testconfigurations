@@ -109,12 +109,14 @@ apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
 kubernetesVersion: stable
 controlPlaneEndpoint: "192.168.0.3:6443"
+networking:
+  podSubnet: 10.244.0.0/16
 etcd:
     external:
         endpoints:
-        - https://192.168.0.4:2379
-        - https://192.168.0.5:2379
-        - https://192.168.0.6:2379
+        - https://192.168.0.7:2379
+        - https://192.168.0.8:2379
+        - https://192.168.0.9:2379
         caFile: /etc/kubernetes/pki/etcd/ca.crt
         certFile: /etc/kubernetes/pki/apiserver-etcd-client.crt
         keyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
@@ -138,6 +140,11 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 ## Initialize the pod network
+
+curl -o kube-flannel.yml https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+sed -i.bak 's|"/opt/bin/flanneld",|"/opt/bin/flanneld", "--iface=enp0s8",|' kube-flannel.yml
+kubectl create -f kube-flannel.yml
+
 
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
