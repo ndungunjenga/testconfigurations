@@ -1,27 +1,28 @@
-##Install virtualbox and vagrant
+## Install virtualbox and vagrant
 
 homebrew cask install virtualbox
 homebrew cask install vagrant
 
-##Virtual Machine Setup
+### Virtual Machine Setup
 
 mkdir ~/vms
 mkdir ~/vms/inmbank
 
 cd ~/vms/inmbank
 
-##Create Vagrantfile
+# Create Vagrantfile
 
 touch Vagrantfile
 
-#Edit the file with definitions of VMs with private_network to allow for static ip assignment.
+# Edit the file with definitions of VMs with private_network to allow for static ip assignment.
 
 vagrant up
 vagrant ssh {Node Name}
 
-#1. Load Balancer Setup -  VM Name - lb0
+# 1. Load Balancer Setup -  VM Name - lb0
 apt update
 apt install haproxy
+
 # edit /etc/haproxy/haproxy.cfg and Add to the end of the pregenerated content
 
 frontend k8s-api
@@ -43,13 +44,12 @@ backend k8s-api
 
 
                                                             
-##2. On all master nodes
+## 2. On all master nodes
 
 nc -v 192.168.0.3 6443
 
 
-
-##3. Kubernetes Cluster Setup - Prerequisites on all Master, worker nodes and Etcd nodes
+## Kubernetes Cluster Setup - Prerequisites on all Master, worker nodes and Etcd nodes
 
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
@@ -71,16 +71,19 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 
 ## Setup SSH Authentication for a user with sudo rights
-sudo vim /etc/ssh/sshd_config
-## Change PermitRootLogin prohibit-password to PermitRootLogin yes 
-## PasswordAuthentication no to PasswordAuthentication yes
-## then, restart ssh service:
+
+``sudo vim /etc/ssh/sshd_config
+
+# Change PermitRootLogin prohibit-password to PermitRootLogin yes 
+# PasswordAuthentication no to PasswordAuthentication yes
+# then, restart ssh service:
+
 sudo service ssh restart
 
 apt install kubeadm
 
 
-##5. install etcd cluster in 
+##  install etcd cluster in  the 3 etcd nodes etc0, etc1, etc2
 
 cat << EOF > /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
 [Service]
@@ -95,12 +98,12 @@ systemctl restart kubelet
 
 # Run all the instructions defined in  etcd setup.md
 
-## Check the etcd cluster is healthy before proceeding with control plane setup
+# Check the etcd cluster is healthy before proceeding with control plane setup
 
 docker run --rm -it --net host -v /etc/kubernetes:/etc/kubernetes k8s.gcr.io/etcd:3.4.3-0 etcdctl --cert /etc/kubernetes/pki/etcd/peer.crt --key /etc/kubernetes/pki/etcd/peer.key --cacert /etc/kubernetes/pki/etcd/ca.crt --endpoints https://192.168.0.7:2379 endpoint health --cluster
 
 
-### Create a file called kubeadm-config.yaml with the following contents in the controller-0
+## Create a file called kubeadm-config.yaml with the following contents in the controller-0
 
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
@@ -118,17 +121,17 @@ etcd:
 
 kubeadm init --config kubeadm-config.yaml --upload-certs
 
-### OUTPUT has the join command required to bootstrap the rest of the control plane nodes
+## OUTPUT has the join command required to bootstrap the rest of the control plane nodes
 
 kubeadm join 192.168.0.3:6443 --token spuvw5.uqftf17nfdnylt1j \
     --discovery-token-ca-cert-hash sha256:0cee6852f44db63785c1b6f7be2c775334803df2e7b1e2eabf431adf5b43fbef \
     --control-plane --certificate-key ba23ddbeba9888134b2e3e5f414cf0577019c80149f539509cee41fcc1588b30
 
-## OUTPUT has the join command required for the worker nodes
+# OUTPUT has the join command required for the worker nodes
 
 kubeadm join 192.168.0.3:6443 --token 2y43gc.dn6chpt6te9mhv3a     --discovery-token-ca-cert-hash sha256:ef39e5ab164645df1698d434efbe7cdde9f5ea103ec6e3d0ac3aefde12a2a12e  
 
-## As a Normal user in one of the masters
+# As a Normal user in one of the masters
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
