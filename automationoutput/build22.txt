@@ -1,0 +1,655 @@
+Started by an SCM change
+Obtained Jenkinsfile from git https://github.com/ndungunjenga/testapp.git
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/jobs/testapp/workspace
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+using credential ndungunjenga
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/ndungunjenga/testapp.git # timeout=10
+Fetching upstream changes from https://github.com/ndungunjenga/testapp.git
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials Github Creds
+ > git fetch --tags --progress https://github.com/ndungunjenga/testapp.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+Checking out Revision 83a1610e4fd2d5bbe2ce0ce30bec4ed91c8698b3 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 83a1610e4fd2d5bbe2ce0ce30bec4ed91c8698b3 # timeout=10
+Commit message: "Added ingress"
+ > git rev-list --no-walk 7d8c81d36db3187605859781afe12d1b339e57f9 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/jobs/testapp/workspace@2
+[Pipeline] {
+[Pipeline] checkout
+using credential ndungunjenga
+ > git rev-parse --is-inside-work-tree # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/ndungunjenga/testapp.git # timeout=10
+Fetching upstream changes from https://github.com/ndungunjenga/testapp.git
+ > git --version # timeout=10
+using GIT_ASKPASS to set credentials Github Creds
+ > git fetch --tags --progress https://github.com/ndungunjenga/testapp.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git rev-parse refs/remotes/origin/origin/master^{commit} # timeout=10
+Checking out Revision 83a1610e4fd2d5bbe2ce0ce30bec4ed91c8698b3 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 83a1610e4fd2d5bbe2ce0ce30bec4ed91c8698b3 # timeout=10
+Commit message: "Added ingress"
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] isUnix
+[Pipeline] sh
++ docker inspect -f . golang
+.
+[Pipeline] withDockerContainer
+Jenkins does not seem to be running inside a container
+$ docker run -t -d -u 112:117 -w /var/lib/jenkins/jobs/testapp/workspace@2 -v /var/lib/jenkins/jobs/testapp/workspace@2:/var/lib/jenkins/jobs/testapp/workspace@2:rw,z -v /var/lib/jenkins/jobs/testapp/workspace@2@tmp:/var/lib/jenkins/jobs/testapp/workspace@2@tmp:rw,z -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** -e ******** golang cat
+$ docker top e37055ac5a3135d904f8dd4e1d26a7a3e749fdd45ca008e991a70754754d9849 -eo pid,comm
+[Pipeline] {
+[Pipeline] sh
++ cd /go/src
+[Pipeline] sh
++ mkdir -p /go/src/testapp
+[Pipeline] sh
++ cp -r /var/lib/jenkins/jobs/testapp/workspace@2/Dockerfile /var/lib/jenkins/jobs/testapp/workspace@2/Jenkinsfile /var/lib/jenkins/jobs/testapp/workspace@2/README.md /var/lib/jenkins/jobs/testapp/workspace@2/deployment.yaml /var/lib/jenkins/jobs/testapp/workspace@2/ingress.yaml /var/lib/jenkins/jobs/testapp/workspace@2/main.go /var/lib/jenkins/jobs/testapp/workspace@2/playbook.yml /var/lib/jenkins/jobs/testapp/workspace@2/service.yaml /var/lib/jenkins/jobs/testapp/workspace@2/workspace@2 /go/src/testapp
+[Pipeline] sh
++ go build
+[Pipeline] }
+$ docker stop --time=1 e37055ac5a3135d904f8dd4e1d26a7a3e749fdd45ca008e991a70754754d9849
+$ docker rm -f e37055ac5a3135d904f8dd4e1d26a7a3e749fdd45ca008e991a70754754d9849
+[Pipeline] // withDockerContainer
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Publish)
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] isUnix
+[Pipeline] sh
++ docker build -t amosnjenga/testapp:22 .
+Sending build context to Docker daemon  245.2kB
+Step 1/7 : FROM golang:1.8-alpine
+ ---> 4cb86d3661bf
+Step 2/7 : ADD . /go/src/testapp
+ ---> d6149782862b
+Step 3/7 : RUN go install testapp
+ ---> Running in 6083938bb3c4
+Removing intermediate container 6083938bb3c4
+ ---> 6b06416bec14
+Step 4/7 : FROM alpine:latest
+ ---> e7d92cdc71fe
+Step 5/7 : COPY --from=0 /go/bin/testapp .
+ ---> Using cache
+ ---> ad36646576f9
+Step 6/7 : ENV PORT 8080
+ ---> Using cache
+ ---> 8063fe73b333
+Step 7/7 : CMD ["./testapp"]
+ ---> Using cache
+ ---> a1d0aaad69ef
+Successfully built a1d0aaad69ef
+Successfully tagged amosnjenga/testapp:22
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withDockerRegistry
+$ docker login -u amosnjenga -p ******** https://index.docker.io/v1/
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+WARNING! Your password will be stored unencrypted in /var/lib/jenkins/jobs/testapp/workspace@tmp/db6d14c1-6a6c-4b8d-8dac-0e1ddcee4174/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+[Pipeline] {
+[Pipeline] isUnix
+[Pipeline] sh
++ docker tag amosnjenga/testapp:22 amosnjenga/testapp:22
+[Pipeline] isUnix
+[Pipeline] sh
++ docker push amosnjenga/testapp:22
+The push refers to repository [docker.io/amosnjenga/testapp]
+357cd80e3256: Preparing
+5216338b40a7: Preparing
+5216338b40a7: Layer already exists
+357cd80e3256: Layer already exists
+22: digest: sha256:2aeedf29af6a3e073af199abf430e3fe8a3ffc0ed25a06eb419b9fb508c6f722 size: 739
+[Pipeline] isUnix
+[Pipeline] sh
++ docker tag amosnjenga/testapp:22 amosnjenga/testapp:latest
+[Pipeline] isUnix
+[Pipeline] sh
++ docker push amosnjenga/testapp:latest
+The push refers to repository [docker.io/amosnjenga/testapp]
+357cd80e3256: Preparing
+5216338b40a7: Preparing
+357cd80e3256: Layer already exists
+5216338b40a7: Layer already exists
+latest: digest: sha256:2aeedf29af6a3e073af199abf430e3fe8a3ffc0ed25a06eb419b9fb508c6f722 size: 739
+[Pipeline] }
+[Pipeline] // withDockerRegistry
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
++ ansible-playbook -vvv playbook.yml --extra-vars image_id=amosnjenga/testapp:22
+ansible-playbook 2.9.6
+  config file = None
+  configured module search path = ['/var/lib/jenkins/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/local/lib/python3.5/dist-packages/ansible
+  executable location = /usr/local/bin/ansible-playbook
+  python version = 3.5.2 (default, Oct  8 2019, 13:06:37) [GCC 5.4.0 20160609]
+No config file found; using defaults
+host_list declined parsing /etc/ansible/hosts as it did not pass its verify_file() method
+Skipping due to inventory source not existing or not being readable by the current user
+script declined parsing /etc/ansible/hosts as it did not pass its verify_file() method
+auto declined parsing /etc/ansible/hosts as it did not pass its verify_file() method
+Skipping due to inventory source not existing or not being readable by the current user
+yaml declined parsing /etc/ansible/hosts as it did not pass its verify_file() method
+Skipping due to inventory source not existing or not being readable by the current user
+ini declined parsing /etc/ansible/hosts as it did not pass its verify_file() method
+Skipping due to inventory source not existing or not being readable by the current user
+toml declined parsing /etc/ansible/hosts as it did not pass its verify_file() method
+[WARNING]: No inventory was parsed, only implicit localhost is available
+[WARNING]: provided hosts list is empty, only localhost is available. Note that
+the implicit localhost does not match 'all'
+
+PLAYBOOK: playbook.yml *********************************************************
+1 plays in playbook.yml
+
+PLAY [localhost] ***************************************************************
+
+TASK [Gathering Facts] *********************************************************
+task path: /var/lib/jenkins/jobs/testapp/workspace/playbook.yml:1
+<127.0.0.1> ESTABLISH LOCAL CONNECTION FOR USER: jenkins
+<127.0.0.1> EXEC /bin/sh -c 'echo ~jenkins && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304734.8404284-139471906684289 `" && echo ansible-tmp-1584304734.8404284-139471906684289="` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304734.8404284-139471906684289 `" ) && sleep 0'
+Using module file /usr/local/lib/python3.5/dist-packages/ansible/modules/system/setup.py
+<127.0.0.1> PUT /var/lib/jenkins/.ansible/tmp/ansible-local-5080m7tzpol_/tmps0ahzemd TO /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304734.8404284-139471906684289/AnsiballZ_setup.py
+<127.0.0.1> EXEC /bin/sh -c 'chmod u+x /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304734.8404284-139471906684289/ /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304734.8404284-139471906684289/AnsiballZ_setup.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '/usr/bin/python3 /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304734.8404284-139471906684289/AnsiballZ_setup.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c 'rm -f -r /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304734.8404284-139471906684289/ > /dev/null 2>&1 && sleep 0'
+ok: [localhost]
+META: ran handlers
+
+TASK [Deploy the ingress] ******************************************************
+task path: /var/lib/jenkins/jobs/testapp/workspace/playbook.yml:3
+<127.0.0.1> ESTABLISH LOCAL CONNECTION FOR USER: jenkins
+<127.0.0.1> EXEC /bin/sh -c 'echo ~jenkins && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304735.9043057-12426623946334 `" && echo ansible-tmp-1584304735.9043057-12426623946334="` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304735.9043057-12426623946334 `" ) && sleep 0'
+Using module file /usr/local/lib/python3.5/dist-packages/ansible/modules/clustering/k8s/k8s.py
+<127.0.0.1> PUT /var/lib/jenkins/.ansible/tmp/ansible-local-5080m7tzpol_/tmpaf6vmplt TO /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304735.9043057-12426623946334/AnsiballZ_k8s.py
+<127.0.0.1> EXEC /bin/sh -c 'chmod u+x /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304735.9043057-12426623946334/ /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304735.9043057-12426623946334/AnsiballZ_k8s.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '/usr/bin/python3 /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304735.9043057-12426623946334/AnsiballZ_k8s.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c 'rm -f -r /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304735.9043057-12426623946334/ > /dev/null 2>&1 && sleep 0'
+changed: [localhost] => {
+    "changed": true,
+    "invocation": {
+        "module_args": {
+            "api_key": null,
+            "api_version": "v1",
+            "append_hash": false,
+            "apply": false,
+            "ca_cert": null,
+            "client_cert": null,
+            "client_key": null,
+            "context": null,
+            "force": false,
+            "host": null,
+            "kind": null,
+            "kubeconfig": null,
+            "merge_type": null,
+            "name": null,
+            "namespace": "default",
+            "password": null,
+            "proxy": null,
+            "resource_definition": {
+                "apiVersion": "extensions/v1beta1",
+                "kind": "Ingress",
+                "metadata": {
+                    "annotations": {
+                        "kubernetes.io/ingress.global-static-ip-name": "helloweb-ip"
+                    },
+                    "labels": {
+                        "app": "hello"
+                    },
+                    "name": "helloweb",
+                    "namespace": "default"
+                },
+                "spec": {
+                    "backend": {
+                        "serviceName": "helloweb-backend",
+                        "servicePort": 8080
+                    }
+                }
+            },
+            "src": null,
+            "state": "present",
+            "username": null,
+            "validate": null,
+            "validate_certs": false,
+            "wait": false,
+            "wait_condition": null,
+            "wait_sleep": 5,
+            "wait_timeout": 120
+        }
+    },
+    "method": "create",
+    "result": {
+        "apiVersion": "extensions/v1beta1",
+        "kind": "Ingress",
+        "metadata": {
+            "annotations": {
+                "kubernetes.io/ingress.global-static-ip-name": "helloweb-ip"
+            },
+            "creationTimestamp": "2020-03-15T20:38:57Z",
+            "generation": 1,
+            "labels": {
+                "app": "hello"
+            },
+            "name": "helloweb",
+            "namespace": "default",
+            "resourceVersion": "88187",
+            "selfLink": "/apis/extensions/v1beta1/namespaces/default/ingresses/helloweb",
+            "uid": "5bcb2225-2a32-450c-a1fd-6748edf86880"
+        },
+        "spec": {
+            "backend": {
+                "serviceName": "helloweb-backend",
+                "servicePort": 8080
+            }
+        },
+        "status": {
+            "loadBalancer": {}
+        }
+    }
+}
+
+TASK [Deploy the service] ******************************************************
+task path: /var/lib/jenkins/jobs/testapp/workspace/playbook.yml:9
+<127.0.0.1> ESTABLISH LOCAL CONNECTION FOR USER: jenkins
+<127.0.0.1> EXEC /bin/sh -c 'echo ~jenkins && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.1214917-139148546886875 `" && echo ansible-tmp-1584304737.1214917-139148546886875="` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.1214917-139148546886875 `" ) && sleep 0'
+Using module file /usr/local/lib/python3.5/dist-packages/ansible/modules/clustering/k8s/k8s.py
+<127.0.0.1> PUT /var/lib/jenkins/.ansible/tmp/ansible-local-5080m7tzpol_/tmpnfjfpf0j TO /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.1214917-139148546886875/AnsiballZ_k8s.py
+<127.0.0.1> EXEC /bin/sh -c 'chmod u+x /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.1214917-139148546886875/ /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.1214917-139148546886875/AnsiballZ_k8s.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '/usr/bin/python3 /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.1214917-139148546886875/AnsiballZ_k8s.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c 'rm -f -r /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.1214917-139148546886875/ > /dev/null 2>&1 && sleep 0'
+ok: [localhost] => {
+    "changed": false,
+    "diff": {},
+    "invocation": {
+        "module_args": {
+            "api_key": null,
+            "api_version": "v1",
+            "append_hash": false,
+            "apply": false,
+            "ca_cert": null,
+            "client_cert": null,
+            "client_key": null,
+            "context": null,
+            "force": false,
+            "host": null,
+            "kind": null,
+            "kubeconfig": null,
+            "merge_type": null,
+            "name": null,
+            "namespace": "default",
+            "password": null,
+            "proxy": null,
+            "resource_definition": {
+                "apiVersion": "v1",
+                "kind": "Service",
+                "metadata": {
+                    "labels": {
+                        "app": "hello"
+                    },
+                    "name": "helloweb-backend",
+                    "namespace": "default"
+                },
+                "spec": {
+                    "ports": [
+                        {
+                            "nodePort": 32507,
+                            "port": 8080,
+                            "targetPort": 8080
+                        }
+                    ],
+                    "selector": {
+                        "app": "hello",
+                        "tier": "web"
+                    },
+                    "type": "NodePort"
+                }
+            },
+            "src": null,
+            "state": "present",
+            "username": null,
+            "validate": null,
+            "validate_certs": false,
+            "wait": false,
+            "wait_condition": null,
+            "wait_sleep": 5,
+            "wait_timeout": 120
+        }
+    },
+    "method": "patch",
+    "result": {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "metadata": {
+            "creationTimestamp": "2020-03-15T20:26:58Z",
+            "labels": {
+                "app": "hello"
+            },
+            "name": "helloweb-backend",
+            "namespace": "default",
+            "resourceVersion": "86421",
+            "selfLink": "/api/v1/namespaces/default/services/helloweb-backend",
+            "uid": "45bc8185-9832-46ff-a385-3acc162272e4"
+        },
+        "spec": {
+            "clusterIP": "10.105.204.102",
+            "externalTrafficPolicy": "Cluster",
+            "ports": [
+                {
+                    "nodePort": 32507,
+                    "port": 8080,
+                    "protocol": "TCP",
+                    "targetPort": 8080
+                }
+            ],
+            "selector": {
+                "app": "hello",
+                "tier": "web"
+            },
+            "sessionAffinity": "None",
+            "type": "NodePort"
+        },
+        "status": {
+            "loadBalancer": {}
+        }
+    }
+}
+
+TASK [Deploy the application] **************************************************
+task path: /var/lib/jenkins/jobs/testapp/workspace/playbook.yml:15
+<127.0.0.1> ESTABLISH LOCAL CONNECTION FOR USER: jenkins
+<127.0.0.1> EXEC /bin/sh -c 'echo ~jenkins && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.7205663-5030789001861 `" && echo ansible-tmp-1584304737.7205663-5030789001861="` echo /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.7205663-5030789001861 `" ) && sleep 0'
+Using module file /usr/local/lib/python3.5/dist-packages/ansible/modules/clustering/k8s/k8s.py
+<127.0.0.1> PUT /var/lib/jenkins/.ansible/tmp/ansible-local-5080m7tzpol_/tmpcj_6it41 TO /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.7205663-5030789001861/AnsiballZ_k8s.py
+<127.0.0.1> EXEC /bin/sh -c 'chmod u+x /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.7205663-5030789001861/ /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.7205663-5030789001861/AnsiballZ_k8s.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c '/usr/bin/python3 /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.7205663-5030789001861/AnsiballZ_k8s.py && sleep 0'
+<127.0.0.1> EXEC /bin/sh -c 'rm -f -r /var/lib/jenkins/.ansible/tmp/ansible-tmp-1584304737.7205663-5030789001861/ > /dev/null 2>&1 && sleep 0'
+changed: [localhost] => {
+    "changed": true,
+    "diff": {
+        "after": {
+            "metadata": {
+                "generation": 2,
+                "resourceVersion": "88188"
+            },
+            "spec": {
+                "template": {
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "amosnjenga/testapp:22",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "hello-app",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "before": {
+            "metadata": {
+                "generation": 1,
+                "resourceVersion": "87255"
+            },
+            "spec": {
+                "template": {
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "amosnjenga/testapp:21",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "hello-app",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "invocation": {
+        "module_args": {
+            "api_key": null,
+            "api_version": "v1",
+            "append_hash": false,
+            "apply": false,
+            "ca_cert": null,
+            "client_cert": null,
+            "client_key": null,
+            "context": null,
+            "force": false,
+            "host": null,
+            "kind": null,
+            "kubeconfig": null,
+            "merge_type": null,
+            "name": null,
+            "namespace": "default",
+            "password": null,
+            "proxy": null,
+            "resource_definition": {
+                "apiVersion": "apps/v1",
+                "kind": "Deployment",
+                "metadata": {
+                    "labels": {
+                        "app": "hello"
+                    },
+                    "name": "helloweb",
+                    "namespace": "default"
+                },
+                "spec": {
+                    "selector": {
+                        "matchLabels": {
+                            "app": "hello",
+                            "tier": "web"
+                        }
+                    },
+                    "template": {
+                        "metadata": {
+                            "labels": {
+                                "app": "hello",
+                                "tier": "web"
+                            }
+                        },
+                        "spec": {
+                            "containers": [
+                                {
+                                    "image": "amosnjenga/testapp:22",
+                                    "name": "hello-app",
+                                    "ports": [
+                                        {
+                                            "containerPort": 8080
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "src": null,
+            "state": "present",
+            "username": null,
+            "validate": null,
+            "validate_certs": false,
+            "wait": false,
+            "wait_condition": null,
+            "wait_sleep": 5,
+            "wait_timeout": 120
+        }
+    },
+    "method": "patch",
+    "result": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+            "annotations": {
+                "deployment.kubernetes.io/revision": "1"
+            },
+            "creationTimestamp": "2020-03-15T20:26:59Z",
+            "generation": 2,
+            "labels": {
+                "app": "hello"
+            },
+            "name": "helloweb",
+            "namespace": "default",
+            "resourceVersion": "88188",
+            "selfLink": "/apis/apps/v1/namespaces/default/deployments/helloweb",
+            "uid": "52fb1d6f-76cb-48f6-8924-072100e2f3e1"
+        },
+        "spec": {
+            "progressDeadlineSeconds": 600,
+            "replicas": 1,
+            "revisionHistoryLimit": 10,
+            "selector": {
+                "matchLabels": {
+                    "app": "hello",
+                    "tier": "web"
+                }
+            },
+            "strategy": {
+                "rollingUpdate": {
+                    "maxSurge": "25%",
+                    "maxUnavailable": "25%"
+                },
+                "type": "RollingUpdate"
+            },
+            "template": {
+                "metadata": {
+                    "creationTimestamp": null,
+                    "labels": {
+                        "app": "hello",
+                        "tier": "web"
+                    }
+                },
+                "spec": {
+                    "containers": [
+                        {
+                            "image": "amosnjenga/testapp:22",
+                            "imagePullPolicy": "IfNotPresent",
+                            "name": "hello-app",
+                            "ports": [
+                                {
+                                    "containerPort": 8080,
+                                    "protocol": "TCP"
+                                }
+                            ],
+                            "resources": {},
+                            "terminationMessagePath": "/dev/termination-log",
+                            "terminationMessagePolicy": "File"
+                        }
+                    ],
+                    "dnsPolicy": "ClusterFirst",
+                    "restartPolicy": "Always",
+                    "schedulerName": "default-scheduler",
+                    "securityContext": {},
+                    "terminationGracePeriodSeconds": 30
+                }
+            }
+        },
+        "status": {
+            "availableReplicas": 1,
+            "conditions": [
+                {
+                    "lastTransitionTime": "2020-03-15T20:32:19Z",
+                    "lastUpdateTime": "2020-03-15T20:32:19Z",
+                    "message": "Deployment has minimum availability.",
+                    "reason": "MinimumReplicasAvailable",
+                    "status": "True",
+                    "type": "Available"
+                },
+                {
+                    "lastTransitionTime": "2020-03-15T20:26:59Z",
+                    "lastUpdateTime": "2020-03-15T20:32:19Z",
+                    "message": "ReplicaSet \"helloweb-6fd79c888b\" has successfully progressed.",
+                    "reason": "NewReplicaSetAvailable",
+                    "status": "True",
+                    "type": "Progressing"
+                }
+            ],
+            "observedGeneration": 1,
+            "readyReplicas": 1,
+            "replicas": 1,
+            "updatedReplicas": 1
+        }
+    }
+}
+META: ran handlers
+META: ran handlers
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
