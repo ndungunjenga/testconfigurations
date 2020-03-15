@@ -103,7 +103,7 @@ systemctl restart kubelet
 docker run --rm -it --net host -v /etc/kubernetes:/etc/kubernetes k8s.gcr.io/etcd:3.4.3-0 etcdctl --cert /etc/kubernetes/pki/etcd/peer.crt --key /etc/kubernetes/pki/etcd/peer.key --cacert /etc/kubernetes/pki/etcd/ca.crt --endpoints https://192.168.0.7:2379 endpoint health --cluster
 
 
-# Create a file called kubeadm-config.yaml with the following contents in the controller-0
+# Create a file called kubeadm-config.yaml with the following contents in the master0
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
 kubernetesVersion: stable
