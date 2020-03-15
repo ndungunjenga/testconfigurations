@@ -57,9 +57,8 @@ sudo kubeadm init phase certs etcd-peer --config=/tmp/${HOST0}/kubeadmcfg.yaml
 sudo kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST0}/kubeadmcfg.yaml
 sudo kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST0}/kubeadmcfg.yaml
 
-# No need to move the certs because they are for HOST0
+# No need to move the certs because they are for HOST0 clean up certs that should not be copied off this host instead
 
-# clean up certs that should not be copied off this host
 sudo find /tmp/${HOST2} -name ca.key -type f -delete
 sudo find /tmp/${HOST1} -name ca.key -type f -delete
 
