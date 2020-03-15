@@ -1,14 +1,15 @@
-## Install virtualbox and vagrant
+# Install virtualbox and vagrant
 
 homebrew cask install virtualbox
+
 homebrew cask install vagrant
 
-### Virtual Machine Setup
+# Virtual Machine Setup
 
 mkdir ~/vms
-mkdir ~/vms/inmbank
+mkdir ~/vms/testapp
 
-cd ~/vms/inmbank
+cd ~/vms/testapp
 
 # Create Vagrantfile
 
@@ -17,10 +18,13 @@ touch Vagrantfile
 # Edit the file with definitions of VMs with private_network to allow for static ip assignment.
 
 vagrant up
+
 vagrant ssh {Node Name}
 
-# 1. Load Balancer Setup -  VM Name - lb0
+# Load Balancer Setup -  VM Name - lb0
+
 apt update
+
 apt install haproxy
 
 # edit /etc/haproxy/haproxy.cfg and Add to the end of the pregenerated content
@@ -36,20 +40,19 @@ backend k8s-api
   option tcplog
   option tcp-check
   balance roundrobin
-  default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
- 
+  default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100 
     server master0 192.168.0.4:6443 check
     server master1 192.168.0.5:6443 check
     server master2 192.168.0.6:6443 check
 
 
                                                             
-## 2. On all master nodes
+# On all master nodes
 
 nc -v 192.168.0.3 6443
 
 
-## Kubernetes Cluster Setup - Prerequisites on all Master, worker nodes and Etcd nodes
+# Kubernetes Cluster Setup - Prerequisites on all Master, worker nodes and Etcd nodes
 
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
@@ -70,10 +73,8 @@ sudo mkdir -p /etc/systemd/system/docker.service.d
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 
-## Setup SSH Authentication for a user with sudo rights
-
-``sudo vim /etc/ssh/sshd_config
-
+# Setup SSH Authentication for a user with sudo rights
+sudo vim /etc/ssh/sshd_config
 # Change PermitRootLogin prohibit-password to PermitRootLogin yes 
 # PasswordAuthentication no to PasswordAuthentication yes
 # then, restart ssh service:
@@ -82,8 +83,7 @@ sudo service ssh restart
 
 apt install kubeadm
 
-
-##  install etcd cluster in  the 3 etcd nodes etc0, etc1, etc2
+## 1.  install etcd cluster in  the 3 etcd nodes etc0, etc1, etc2
 
 cat << EOF > /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
 [Service]
@@ -96,15 +96,14 @@ EOF
 systemctl daemon-reload
 systemctl restart kubelet
 
-# Run all the instructions defined in  etcd setup.md
+## Run all the instructions defined in  etcd setup.md
 
 # Check the etcd cluster is healthy before proceeding with control plane setup
 
 docker run --rm -it --net host -v /etc/kubernetes:/etc/kubernetes k8s.gcr.io/etcd:3.4.3-0 etcdctl --cert /etc/kubernetes/pki/etcd/peer.crt --key /etc/kubernetes/pki/etcd/peer.key --cacert /etc/kubernetes/pki/etcd/ca.crt --endpoints https://192.168.0.7:2379 endpoint health --cluster
 
 
-## Create a file called kubeadm-config.yaml with the following contents in the controller-0
-
+# Create a file called kubeadm-config.yaml with the following contents in the controller-0
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
 kubernetesVersion: stable
@@ -123,17 +122,17 @@ etcd:
 
 kubeadm init --config kubeadm-config.yaml --upload-certs
 
-## OUTPUT has the join command required to bootstrap the rest of the control plane nodes
+# OUTPUT from above command has the join command required to bootstrap the rest of the control plane nodes
 
 kubeadm join 192.168.0.3:6443 --token spuvw5.uqftf17nfdnylt1j \
     --discovery-token-ca-cert-hash sha256:0cee6852f44db63785c1b6f7be2c775334803df2e7b1e2eabf431adf5b43fbef \
     --control-plane --certificate-key ba23ddbeba9888134b2e3e5f414cf0577019c80149f539509cee41fcc1588b30
 
-# OUTPUT has the join command required for the worker nodes
+# OUTPUT also has the join command required for the worker nodes
 
 kubeadm join 192.168.0.3:6443 --token 2y43gc.dn6chpt6te9mhv3a     --discovery-token-ca-cert-hash sha256:ef39e5ab164645df1698d434efbe7cdde9f5ea103ec6e3d0ac3aefde12a2a12e  
 
-# As a Normal user in one of the masters
+# As a Normal user in the first of the masters
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -141,41 +140,36 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 ## Initialize the pod network
 
-curl -o kube-flannel.yml https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-sed -i.bak 's|"/opt/bin/flanneld",|"/opt/bin/flanneld", "--iface=enp0s8",|' kube-flannel.yml
-kubectl create -f kube-flannel.yml
-
-
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
+# On Other Master Nodes -- VM Names master1 and master2 run the prerequisites as in step 3 above and run the join commands
 
-## On Other Master Nodes -- VM Names master1 and master2 run the prerequisites as in step 3 above and run the join commands
+# To test the cluster I chose to use a simple web application whose code is available here, with some adaptation for the pipeline: 
 
-## To test the cluster I chose to use a simple web application whose code is available here, with some adaptation for the pipeline: 
 https://github.com/GoogleCloudPlatform/kubernetes-engine-samples/tree/master/hello-app 
 
-## We'll use Ansible and Jenkins.  Install Ansible and use it to automatically deploy a Jenkins server and Docker runtime environment. We also need to install the openshift Python module to enable Ansible connect with Kubernetes.
+# We'll use Ansible and Jenkins installed in the build1 server  Install Ansible and use it to automatically deploy a Jenkins server and Docker runtime environment. We also need to install the openshift Python module to enable Ansible connect with Kubernetes.
 
-## Log in to the build1 instance. Install Python 3, Ansible, and the openshift module:
+# Log in to the build1 instance. Install Python 3, Ansible, and the openshift module:
 
 vagrant up build1
 vagrant ssh build1
 
 sudo apt update && sudo apt install -y python3 && sudo apt install -y python3-pip && sudo pip3 install ansible && sudo pip3 install openshift
 
-## Install Java
+# Install Java
 
 sudo apt install default-jdk-headless
 
-## Install the Ansible role necessary for deploying a Jenkins instance:
+# Install the Ansible role necessary for deploying a Jenkins instance:
 
 ansible-galaxy install geerlingguy.jenkins
 
-## Install the Docker role:
+# Install the Docker role:
 
 ansible-galaxy install geerlingguy.docker
 
-## Create a playbook.yaml file and add the following lines and run ansible-playbook
+# Create a playbook.yaml file and add the following lines and run ansible-playbook to install docker and jenkins
 - hosts: localhost
   become: yes
   vars:
@@ -188,6 +182,7 @@ ansible-galaxy install geerlingguy.docker
 
 ansible-playbook plabook.yml
 
+# copy the content of the kubeconfig file from one of the masters to the build server
 
 mkdir ~/.kube
 touch ~/.kube/config
@@ -196,5 +191,8 @@ sudo mkdir ~jenkins/.kube
 sudo cp ~/.kube/config ~jenkins/.kube/
 sudo chown -R jenkins: ~jenkins/.kube/
 
-## Create The Jenkins Pipeline Job
+# Create The Jenkins Pipeline Job on the Jenkins Server 192.168.0.10:8080 - 
+First add the plugins necessary: git, GitHub, CloudBees Docker Build and Publish plugin Pipeline.
+Add Credentials to Docker hub and Github.
 
+Please refer to the repo for the test application : https://github.com/ndungunjenga/testapp.git 
